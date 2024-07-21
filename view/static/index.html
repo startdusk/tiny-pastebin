@@ -1,0 +1,21 @@
+{% extends 'base.html' %} {% block content %}
+<strong style="margin-bottom: 1rem">New Paste</strong>
+<form method="post" action="/">
+  <textarea name="body" type="text" rows="10" placeholder="Paste your text here..." ></textarea>
+  <br />
+  {{ language }}
+  <br />
+  <button type="submit">Submit</button>
+</form>
+{% if pastes %}
+<hr />
+<strong>Latest Pastes</strong>
+<ul style="list-style-type: none; margin-left: -2rem">
+  {% for p in pastes %}
+  <li>
+    🌐 <a href="/{{ code }}">{{ code }}</a>
+    <small> | {{ p.language }} | {{ p.timestamp.strftime('%Y-%m-%d') }} </small>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %} {% endblock %}
