@@ -3,7 +3,10 @@ package controller
 import (
 	"bufio"
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -38,36 +41,43 @@ func (h *PasteHandler) Index(w http.ResponseWriter, r *http.Request) {
 			http.StatusBadRequest)
 		return
 	}
-
+	languages := lexers.Names(true)
 	h.view.Render(w, view.IndexPage, map[string]any{
 		"pastes":    pastes,
-		"languages": "",
+		"languages": languages,
 	})
 }
 
 func (h *PasteHandler) CreatePaste(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	body := r.FormValue("body")
-	if body != "" {
+	if strings.TrimSpace(body) == "" {
+		h.Index(w, r)
+		return
+	}
+
+	language := strings.TrimSpace(r.FormValue("language"))
+	if language == "" {
 		h.Index(w, r)
 		return
 	}
 	code, err := gonanoid.New()
 	if err != nil {
+		log.Println("generate nanoid error:", err)
 		http.Error(w, err.Error(),
 			http.StatusUnprocessableEntity)
 		return
 	}
 
-	language := lexers.Analyse(body).Config().Name
 	ctx := r.Context()
 	paste, err := h.postgres.CreatePaste(ctx, model.CreatePaste{
 		Code:     code,
 		Body:     body,
 		Language: language,
-		Hash:     "123456",
+		Hash:     GetMD5Hash(body),
 	})
 	if err != nil {
+		log.Println("create paste error:", err)
 		http.Error(w, err.Error(),
 			http.StatusInternalServerError)
 		return
@@ -92,7 +102,7 @@ func (h *PasteHandler) GetPaste(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
 	bw := bufio.NewWriter(&buf)
-	if err = quick.Highlight(bw, paste.Code, paste.Language, "html", "monokai"); err != nil {
+	if err = quick.Highlight(bw, paste.Body, paste.Language, "html", "monokai"); err != nil {
 		http.Error(w, err.Error(),
 			http.StatusUnprocessableEntity)
 		return
@@ -107,4 +117,10 @@ func (h *PasteHandler) GetPaste(w http.ResponseWriter, r *http.Request) {
 			http.StatusUnprocessableEntity)
 		return
 	}
+}
+
+func GetMD5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
 }

@@ -1,14 +1,17 @@
 package model
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Paste struct {
-	ID        int    `json:"-"`
-	Code      string `json:"code"`
-	Body      string `json:"body"`
-	Language  string `json:"language"`
-	Hash      string `json:"-"`
-	CreatedAt int64  `json:"created_at"`
+	ID        int       `json:"-" db:"id"`
+	Code      string    `json:"code" db:"code"`
+	Body      string    `json:"body" db:"body"`
+	Language  string    `json:"language" db:"language"`
+	Hash      string    `json:"-" db:"hash"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
 type CreatePaste struct {
@@ -19,34 +22,23 @@ type CreatePaste struct {
 }
 
 const createPasteQuery = `
-	INSERT INTO paste (code, body, language) VALUES (?,?,?) RETURNING *
+	INSERT INTO paste (code, body, language, hash) VALUES ($1,$2,$3,$4) 
+	ON CONFLICT(hash) DO UPDATE SET hash=EXCLUDED.hash RETURNING *
 `
 
 func (p *Postgres) CreatePaste(ctx context.Context, cp CreatePaste) (Paste, error) {
 	var paste Paste
-	err := p.db.QueryRowContext(ctx, createPasteQuery, cp.Code, cp.Body, cp.Language).Scan(
-		&paste.ID,
-		&paste.Code,
-		&paste.Body,
-		&paste.Language,
-		&paste.CreatedAt,
-	)
+	err := p.db.QueryRowxContext(ctx, createPasteQuery, cp.Code, cp.Body, cp.Language, cp.Hash).StructScan(&paste)
 	return paste, err
 }
 
 const getPasteByCodeQuery = `
-	SELECT id, code, body, language, created_at FROM paste WHERE code = ?
+	SELECT id, code, body, language, created_at FROM paste WHERE code = $1
 `
 
 func (p *Postgres) GetPasteByCode(ctx context.Context, code string) (Paste, error) {
 	var paste Paste
-	err := p.db.QueryRowContext(ctx, getPasteByCodeQuery, code).Scan(
-		&paste.ID,
-		&paste.Code,
-		&paste.Body,
-		&paste.Language,
-		&paste.CreatedAt,
-	)
+	err := p.db.GetContext(ctx, &paste, getPasteByCodeQuery, code)
 	return paste, err
 }
 
@@ -55,21 +47,7 @@ const latestPasteByCodeQuery = `
 `
 
 func (p *Postgres) LatestPaste(ctx context.Context, limit uint) ([]Paste, error) {
-	rows, err := p.db.QueryContext(ctx, latestPasteByCodeQuery, limit)
-	if err != nil {
-		return nil, err
-	}
 	var pastes []Paste
-	for rows.Next() {
-		var paste Paste
-		if err := rows.Scan(
-			&paste.ID,
-			&paste.Code,
-			&paste.Language,
-			&paste.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-	}
-	return pastes, rows.Err()
+	err := p.db.SelectContext(ctx, &pastes, latestPasteByCodeQuery, limit)
+	return pastes, err
 }

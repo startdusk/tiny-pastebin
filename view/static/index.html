@@ -3,7 +3,13 @@
 <form method="post" action="/">
   <textarea name="body" type="text" rows="10" placeholder="Paste your text here..." ></textarea>
   <br />
-  {{ language }}
+  <label for="cars">Choose a language:</label>
+
+  <select name="language">
+    {% for lan in languages %}
+      <option value="{{ lan }}">{{ lan }}</option>
+    {% endfor %}
+  </select>
   <br />
   <button type="submit">Submit</button>
 </form>
@@ -13,8 +19,8 @@
 <ul style="list-style-type: none; margin-left: -2rem">
   {% for p in pastes %}
   <li>
-    🌐 <a href="/{{ code }}">{{ code }}</a>
-    <small> | {{ p.language }} | {{ p.timestamp.strftime('%Y-%m-%d') }} </small>
+    🌐 <a href="/{{ p.Code }}">{{ p.Code }}</a>
+    <small> | {{ p.Language }} | {{ p.CreatedAt | date:'2006-01-02 15:04:05' }} </small>
   </li>
   {% endfor %}
 </ul>

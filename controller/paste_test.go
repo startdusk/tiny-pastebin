@@ -28,4 +28,7 @@ func main() { }
 
 	languages := lexers.Names(true)
 	log.Println(languages)
+
+	lexer := lexers.Analyse(code)
+	t.Logf("%+v", lexer)
 }

@@ -21,15 +21,17 @@
 {% endblock %} {% block content %}
 <p>
   Your paste URL:
-  <a href="/{{ code }}"
-    >{{ code }}</a
+  <a href="/{{ paste.Code }}"
+    >{{ paste.Code }}</a
   >
 </p>
 <div class="highlight" style="position: relative">
-  {{ highlight_body|safe }}
+  {{ paste.Body | safe }}
   <button class="copy">copy</button>
 </div>
 <script>
+
+
   let copyBtn = document.querySelector('.copy')
   copyBtn.addEventListener('click', async () => {
     try {

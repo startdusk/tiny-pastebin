@@ -19,8 +19,7 @@ var (
 
 func main() {
 	flag.Parse()
-	dbURL := *databaseURL
-	conn, err := sqlx.Open("postgres", dbURL)
+	conn, err := sqlx.Open("postgres", *databaseURL)
 	if err != nil {
 		panic(err)
 	}
