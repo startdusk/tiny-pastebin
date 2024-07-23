@@ -102,15 +102,15 @@ func (h *PasteHandler) GetPaste(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
 	bw := bufio.NewWriter(&buf)
-	if err = quick.Highlight(bw, paste.Body, paste.Language, "html", "monokai"); err != nil {
+	if err = quick.Highlight(bw, paste.Body, paste.Language, "html", "vs"); err != nil {
 		http.Error(w, err.Error(),
 			http.StatusUnprocessableEntity)
 		return
 	}
 	bw.Flush()
-	paste.Body = buf.String()
 	err = h.view.Render(w, view.PastePage, map[string]any{
-		"paste": paste,
+		"paste":   paste,
+		"content": buf.String(),
 	})
 	if err != nil {
 		http.Error(w, err.Error(),

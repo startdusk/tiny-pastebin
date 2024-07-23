@@ -26,18 +26,15 @@
   >
 </p>
 <div class="highlight" style="position: relative">
-  {{ paste.Body | safe }}
+  {{ content | safe }}
   <button class="copy">copy</button>
 </div>
 <script>
-
-
-  let copyBtn = document.querySelector('.copy')
+  const code = `{{ paste.Body | safe }}`
+  const copyBtn = document.querySelector('.copy')
   copyBtn.addEventListener('click', async () => {
     try {
-      await navigator.clipboard.writeText(
-        document.querySelector('.highlight > :not(button)').textContent
-      )
+      await navigator.clipboard.writeText(code)
       copyBtn.textContent = 'copied!'
     } catch (err) {
       alert('Copy failed:', err)
