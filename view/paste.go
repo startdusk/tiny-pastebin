@@ -13,14 +13,16 @@ type PasteView struct {
 
 const IndexPage = "index.html"
 const PastePage = "paste.html"
+const NotFoundPage = "404.html"
 
 func CreatePasteView(root string) PasteView {
 	pv := PasteView{
 		tpls: make(map[string]*pongo2.Template),
 	}
 
-	pv.tpls[IndexPage] = pongo2.Must(pongo2.FromFile(fmt.Sprintf("./view/static/%s", IndexPage)))
-	pv.tpls[PastePage] = pongo2.Must(pongo2.FromFile(fmt.Sprintf("./view/static/%s", PastePage)))
+	pv.tpls[IndexPage] = pongo2.Must(pongo2.FromFile(fmt.Sprintf("%s/%s", root, IndexPage)))
+	pv.tpls[PastePage] = pongo2.Must(pongo2.FromFile(fmt.Sprintf("%s/%s", root, PastePage)))
+	pv.tpls[NotFoundPage] = pongo2.Must(pongo2.FromFile(fmt.Sprintf("%s/%s", root, NotFoundPage)))
 
 	return pv
 }

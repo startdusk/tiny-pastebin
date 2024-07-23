@@ -4,7 +4,25 @@
   button.copy {
     position: absolute;
     top: 2rem;
-    right: 1rem;
+    right: -5rem;
+    background-color: #4caf50;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+    width: 66px;
+  }
+
+  button.copy:hover {
+    background-color: #309334;
+  }
+
+  button.picture {
+    position: absolute;
+    top: 4rem;
+    right: -5rem;
     background-color: #4caf50;
     border: none;
     color: white;
@@ -14,31 +32,50 @@
     cursor: pointer;
   }
 
-  button.copy:hover {
+  button.picture:hover {
     background-color: #309334;
   }
 </style>
 {% endblock %} {% block content %}
 <p>
   Your paste URL:
-  <a href="/{{ paste.Code }}"
-    >{{ paste.Code }}</a
+  <a id="url" href="/{{ paste.Code }}"
+    ></a
   >
 </p>
 <div class="highlight" style="position: relative">
-  {{ content | safe }}
+  <div id="content">
+    {{ content | safe }}
+  </div>
   <button class="copy">copy</button>
+  <button class="picture">picture</button>
 </div>
 <script>
+  window.onload = () => {
+    const url = location.origin + "/" + "{{ paste.Code }}"
+    document.getElementById("url").innerHTML = url
+  }
+  const filename = `{{ paste.Code }}`
   const code = `{{ paste.Body | safe }}`
   const copyBtn = document.querySelector('.copy')
   copyBtn.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(code)
       copyBtn.textContent = 'copied!'
+      setTimeout(() => {
+        copyBtn.textContent = 'copy'
+      }, 1000)
     } catch (err) {
       alert('Copy failed:', err)
     }
+  })
+
+  const pictureBtn = document.querySelector('.picture')
+  pictureBtn.addEventListener('click', () => {
+    htmlToImage.toPng(document.getElementById('content'))
+      .then((dataUrl) => {
+        download(dataUrl, `${filename}.png`);
+      });
   })
 </script>
 {% endblock %}

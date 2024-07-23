@@ -4,7 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"crypto/md5"
+	"database/sql"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -95,8 +97,13 @@ func (h *PasteHandler) GetPaste(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	paste, err := h.postgres.GetPasteByCode(ctx, code)
 	if err != nil {
-		http.Error(w, err.Error(),
-			http.StatusBadRequest)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			h.NotFound(w, r)
+		default:
+			http.Error(w, err.Error(),
+				http.StatusBadRequest)
+		}
 		return
 	}
 
@@ -108,11 +115,18 @@ func (h *PasteHandler) GetPaste(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	bw.Flush()
-	err = h.view.Render(w, view.PastePage, map[string]any{
+	if err := h.view.Render(w, view.PastePage, map[string]any{
 		"paste":   paste,
 		"content": buf.String(),
-	})
-	if err != nil {
+	}); err != nil {
+		http.Error(w, err.Error(),
+			http.StatusUnprocessableEntity)
+		return
+	}
+}
+
+func (h *PasteHandler) NotFound(w http.ResponseWriter, r *http.Request) {
+	if err := h.view.Render(w, view.NotFoundPage, nil); err != nil {
 		http.Error(w, err.Error(),
 			http.StatusUnprocessableEntity)
 		return

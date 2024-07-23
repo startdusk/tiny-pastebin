@@ -12,6 +12,7 @@ type Paste struct {
 	Language  string    `json:"language" db:"language"`
 	Hash      string    `json:"-" db:"hash"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type CreatePaste struct {
@@ -23,7 +24,7 @@ type CreatePaste struct {
 
 const createPasteQuery = `
 	INSERT INTO paste (code, body, language, hash) VALUES ($1,$2,$3,$4) 
-	ON CONFLICT(hash) DO UPDATE SET hash=EXCLUDED.hash RETURNING *
+	ON CONFLICT(hash) DO UPDATE SET updated_at=NOW() RETURNING *
 `
 
 func (p *Postgres) CreatePaste(ctx context.Context, cp CreatePaste) (Paste, error) {
@@ -33,7 +34,7 @@ func (p *Postgres) CreatePaste(ctx context.Context, cp CreatePaste) (Paste, erro
 }
 
 const getPasteByCodeQuery = `
-	SELECT id, code, body, language, created_at FROM paste WHERE code = $1
+	SELECT id, code, body, language, created_at ,updated_at FROM paste WHERE code = $1
 `
 
 func (p *Postgres) GetPasteByCode(ctx context.Context, code string) (Paste, error) {
@@ -43,7 +44,7 @@ func (p *Postgres) GetPasteByCode(ctx context.Context, code string) (Paste, erro
 }
 
 const latestPasteByCodeQuery = `
-	SELECT id, code, language, created_at FROM paste ORDER BY created_at DESC LIMIT $1
+	SELECT id, code, language, created_at, updated_at FROM paste ORDER BY created_at DESC LIMIT $1
 `
 
 func (p *Postgres) LatestPaste(ctx context.Context, limit uint) ([]Paste, error) {
