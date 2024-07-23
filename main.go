@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net"
 	"net/http"
 
@@ -25,6 +26,7 @@ func main() {
 	}
 	conn.SetMaxOpenConns(32)
 	addr := net.JoinHostPort(*host, *port)
+	log.Println("Tiny code listen on:", addr)
 	if err := run(conn, addr); err != nil {
 		panic(err)
 	}
