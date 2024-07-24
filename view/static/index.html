@@ -4,7 +4,6 @@
   <textarea name="body" type="text" rows="10" placeholder="Paste your text here..." ></textarea>
   <br />
   <label for="cars">Choose a language:</label>
-
   <select name="language">
     {% for lan in languages %}
       <option value="{{ lan }}">{{ lan }}</option>
@@ -19,7 +18,7 @@
 <ul style="list-style-type: none; margin-left: -2rem">
   {% for p in pastes %}
   <li>
-    🌐 <a href="/{{ p.Code }}">{{ p.Code }}</a>
+    🔗 <a href="/{{ p.Code }}">{{ p.Code }}</a>
     <small> | {{ p.Language }} | {{ p.CreatedAt | date:'2006-01-02 15:04:05' }} </small>
   </li>
   {% endfor %}
