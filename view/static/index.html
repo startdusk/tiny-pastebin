@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block content %}
 <strong style="margin-bottom: 1rem">New Paste</strong>
 <form method="post" action="/">
-  <textarea name="body" type="text" rows="10" placeholder="Paste your text here..." ></textarea>
+  <textarea id="workspace" name="body" type="text" rows="10" placeholder="Paste your text here..." ></textarea>
   <br />
   <label for="cars">Choose a language:</label>
   <select name="language">
@@ -23,4 +23,13 @@
   </li>
   {% endfor %}
 </ul>
-{% endif %} {% endblock %}
+{% endif %}
+<script>
+  const workspace = document.getElementById("workspace")
+  CodeMirror.fromTextArea(workspace, {
+    lineNumbers: true,
+    mode: "htmlmixed"
+  });
+</script>
+
+{% endblock %}
