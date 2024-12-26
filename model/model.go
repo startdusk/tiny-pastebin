@@ -13,7 +13,10 @@ import (
 
 func CreateDatabase(conn *sqlx.DB) (*Postgres, error) {
 	err := migrateDB(conn.DB)
-	return &Postgres{db: conn}, err
+	if err != nil {
+		return nil, err
+	}
+	return &Postgres{db: conn}, nil
 }
 
 type Postgres struct {
